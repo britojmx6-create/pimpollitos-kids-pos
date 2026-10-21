@@ -1,1 +1,127 @@
-inventario
+{
+    "categorias": [
+        "Camisas",
+        "Pantalones",
+        "Vestidos",
+        "Chaquetas",
+        "Calzado",
+        "Accesorios",
+        "Ropa interior y de dormir"
+    ],
+    "tallas": [
+        "2",
+        "4",
+        "6",
+        "8",
+        "10",
+        "12",
+        "14",
+        "S",
+        "M",
+        "L",
+        "XL"
+    ],
+    "colores": [
+        "Negro",
+        "Blanco",
+        "Azul",
+        "Gris",
+        "Rojo",
+        "beige",
+        "Multicolor"
+    ],
+    "productos": [
+        {
+            "id": "PROD-1",
+            "codigo": "1001",
+            "nombre": "Camisa niñas",
+            "categoria": "Camisas",
+            "precio_compra": 10,
+            "precio_venta": 15,
+            "stock": 2,
+            "talla": "10",
+            "color": "Multicolor"
+        },
+        {
+            "id": "PROD-2",
+            "codigo": "1002",
+            "nombre": "Jean niñas",
+            "categoria": "Pantalones",
+            "precio_compra": 10,
+            "precio_venta": 18,
+            "stock": 2,
+            "talla": "8",
+            "color": "Multicolor"
+        },
+        {
+            "id": "PROD-3",
+            "codigo": " 1003",
+            "nombre": "short",
+            "categoria": "Pantalones",
+            "talla": "12",
+            "color": "Blanco",
+            "precio_compra": 10,
+            "precio_venta": 15,
+            "stock": 12
+        },
+        {
+            "id": "PROD-5",
+            "codigo": "1005",
+            "nombre": "bluson",
+            "categoria": "Camisas",
+            "talla": "6",
+            "color": "Gris",
+            "precio_compra": 2,
+            "precio_venta": 5,
+            "stock": 2
+        },
+        {
+            "id": "PROD-6",
+            "codigo": "1006",
+            "nombre": "pantalon jogger",
+            "categoria": "Pantalones",
+            "talla": "10",
+            "color": "Negro",
+            "precio_compra": 8,
+            "precio_venta": 16,
+            "stock": 7
+        }
+    ],
+    "ventas": [
+        {
+            "id": "VENTA-1",
+            "total": 170,
+            "ganancia": 100,
+            "items": [
+                {
+                    "id": "PROD-1",
+                    "nombre": "Camisa Oxford Slim",
+                    "cantidad": 4,
+                    "precio_unitario": 25,
+                    "subtotal": 100
+                },
+                {
+                    "id": "PROD-2",
+                    "nombre": "Jean Slim Fit Azul",
+                    "cantidad": 2,
+                    "precio_unitario": 35,
+                    "subtotal": 70
+                }
+            ]
+        },
+        {
+            "id": "VENTA-2",
+            "total": 25,
+            "ganancia": 15,
+            "items": [
+                {
+                    "id": "PROD-1",
+                    "nombre": "Camisa Oxford Slim",
+                    "cantidad": 1,
+                    "precio_unitario": 25,
+                    "subtotal": 25
+                }
+            ]
+        }
+    ]
+}
