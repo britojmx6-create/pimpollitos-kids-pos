@@ -1,4 +1,8 @@
 /* Configuración general y fondo alegre */
+* {
+    box-sizing: border-box;
+}
+
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     background-color: #fcf8f2; /* Fondo crema muy suave y cálido */
@@ -7,15 +11,32 @@ body {
     padding: 0;
 }
 
-/* Barra de navegación superior con estilo infantil */
+/* Barra de navegación superior con estilo infantil adaptable */
 .navbar {
     background: linear-gradient(135deg, #e3f2fd, #fce4ec); /* Degradado suave entre celeste y rosa pastel */
     border-bottom: 3px solid #ffb74d; /* Toque alegre en tono naranja pastel */
-    padding: 10px 20px;
+    padding: 10px 15px;
     display: flex;
     align-items: center;
     justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.navbar .logo {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: #4a5568;
+}
+
+.nav-links {
+    list-style: none;
+    display: flex;
+    gap: 10px;
+    margin: 0;
+    padding: 0;
+    flex-wrap: wrap;
 }
 
 .nav-links a {
@@ -24,6 +45,7 @@ body {
     color: #4a5568;
     padding: 6px 12px;
     border-radius: 20px;
+    font-size: 0.9rem;
     transition: all 0.3s ease;
 }
 
@@ -32,36 +54,39 @@ body {
     color: #e91e63; /* Rosa alegre al pasar el mouse */
 }
 
-/* Contenedores y Tarjetas */
+/* Contenedores y Tarjetas adaptables */
 .container {
     max-width: 1100px;
-    margin: 30px auto;
-    padding: 0 20px;
+    margin: 15px auto;
+    padding: 0 10px;
 }
 
 .card {
     background: #ffffff;
-    padding: 25px;
+    padding: 15px;
     border-radius: 12px;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
-    margin-bottom: 25px;
+    margin-bottom: 20px;
     border-top: 4px solid #64b5f6; /* Detalle celeste alegre */
+    overflow-x: auto; /* Evita desbordamientos en pantallas chicas */
 }
 
-/* Formularios y cuadrícula */
+/* Formularios y cuadrícula flexible */
 .form-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-    gap: 15px;
-    margin-bottom: 20px;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 12px;
+    margin-bottom: 15px;
 }
 
 input, select {
     padding: 10px 12px;
     border: 2px solid #e2e8f0;
     border-radius: 8px;
-    font-size: 0.95rem;
+    font-size: 1rem; /* Evita zoom automático en iOS */
     outline: none;
+    width: 100%;
+    background-color: #fff;
     transition: border-color 0.2s;
 }
 
@@ -69,13 +94,20 @@ input:focus, select:focus {
     border-color: #ff80ab; /* Resalta en rosa pastel al enfocar */
 }
 
-/* Botones amigables y redondeados */
+/* Botones amigables y redondeados generales */
+.btn-group {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
 .btn {
     padding: 10px 18px;
     border: none;
     border-radius: 25px; /* Bordes redondeados más infantiles/amigables */
     font-weight: 600;
     cursor: pointer;
+    font-size: 0.95rem;
     transition: transform 0.1s ease, background-color 0.2s;
 }
 
@@ -101,24 +133,79 @@ input:focus, select:focus {
     background-color: #d0d0d0;
 }
 
-/* Tablas de Inventario */
+/* --- BOTONES DE ACCIÓN MODERNOS CON ICONOS (NUEVO) --- */
+.btn-action-group {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.btn-icon {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 10px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.2s, transform 0.1s;
+}
+
+.btn-icon:active {
+    transform: scale(0.9);
+}
+
+.btn-icon.edit {
+    color: #f59e0b; /* Amarillo/Naranja cálido */
+    background-color: #fef3c7;
+}
+
+.btn-icon.edit:hover {
+    background-color: #fde68a;
+}
+
+.btn-icon.delete {
+    color: #ef4444; /* Rojo suave */
+    background-color: #fee2e2;
+}
+
+.btn-icon.delete:hover {
+    background-color: #fecaca;
+}
+
+.btn-icon svg {
+    width: 18px;
+    height: 18px;
+    stroke-width: 2.2;
+}
+
+/* Tablas de Inventario adaptadas para móviles */
+.table-responsive {
+    width: 100%;
+    overflow-x: auto;
+}
+
 .table {
     width: 100%;
     border-collapse: collapse;
     margin-top: 10px;
+    min-width: 600px; /* Fuerza scroll horizontal limpio en celulares */
 }
 
 .table th {
     background-color: #f3e5f5; /* Lila pastel muy suave para encabezados de tabla */
     color: #4a148c;
-    padding: 12px;
+    padding: 10px;
     text-align: left;
     font-weight: 600;
+    font-size: 0.9rem;
 }
 
 .table td {
-    padding: 12px;
+    padding: 10px;
     border-bottom: 1px solid #f0f0f0;
+    font-size: 0.9rem;
 }
 
 .badge {
@@ -126,6 +213,68 @@ input:focus, select:focus {
     color: #0288d1;
     padding: 4px 8px;
     border-radius: 12px;
-    font-size: 0.85rem;
+    font-size: 0.8rem;
     font-weight: 600;
+}
+
+/* POS Layout Adaptable (Se apila en celulares) */
+.pos-layout {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 15px;
+}
+
+@media (min-width: 768px) {
+    .pos-layout {
+        grid-template-columns: 2fr 1fr;
+    }
+    .container {
+        margin: 30px auto;
+        padding: 0 20px;
+    }
+    .card {
+        padding: 25px;
+    }
+}
+
+.input-search {
+    font-size: 1rem;
+    margin-bottom: 15px;
+}
+
+.grid-productos {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 12px;
+    max-height: 450px;
+    overflow-y: auto;
+}
+
+.card-item {
+    border: 1px solid #e0e0e0;
+    padding: 10px;
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    background: #fafafa;
+}
+
+.price {
+    font-weight: bold;
+    color: #ff6f61;
+    font-size: 1rem;
+}
+
+.cart-summary {
+    margin-top: 15px;
+    border-top: 2px solid #eee;
+    padding-top: 15px;
+}
+
+.btn-remove {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1.1rem;
 }
