@@ -1,6 +1,18 @@
 {
   "short_name": "Pimpollitos",
   "name": "Pimpollitos Kids POS",
+  "icons": [
+    {
+      "src": "img/pimpollito.jpg",
+      "sizes": "192x192",
+      "type": "image/jpg"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
   "start_url": "/",
   "display": "standalone",
   "theme_color": "#000000",
