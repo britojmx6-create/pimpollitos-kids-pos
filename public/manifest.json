@@ -8,9 +8,9 @@
       "type": "image/jpg"
     },
     {
-      "src": "/icon-512.png",
+      "src": "img/pimpollito.jpg",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/jpg"
     }
   ],
   "start_url": "/",
