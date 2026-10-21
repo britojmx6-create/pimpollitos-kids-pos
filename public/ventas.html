@@ -1,1 +1,229 @@
-ventas
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Punto de Venta - Pimpollitos Kids</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="logo-container" style="display: flex; align-items: center; gap: 12px;">
+            <div style="width: 55px; height: 55px; border-radius: 50%; overflow: hidden; display: flex; align-items: center; justify-content: center; background-color: #fff; box-shadow: 0 2px 6px rgba(0,0,0,0.15);">
+                <img src="/img/pimpollito.jpg" alt="Pimpollitos Kids" style="width: 100%; height: 100%; object-fit: cover; object-position: center;">
+            </div>
+            <span style="font-weight: bold; font-size: 1.3rem; color: #333;">Pimpollitos Kids</span>
+        </div>
+        <ul class="nav-links" style="display: flex; gap: 15px; list-style: none; margin: 0; padding: 0;">
+            <li><a href="/">Inventario</a></li>
+            <li><a href="/ventas">Punto de Venta (POS)</a></li>
+        </ul>
+    </nav>
+
+    <!-- Disposición en 2 columnas: Productos a la izquierda (flex: 2) y Carrito a la derecha (flex: 1) -->
+    <main class="container" style="max-width: 1300px; display: flex; gap: 20px; align-items: flex-start;">
+        
+        <!-- Columna Izquierda: Catálogo de Productos -->
+        <div class="card" style="flex: 2; margin-bottom: 0;">
+            <h2>Módulo de Ventas (POS)</h2>
+            <div style="margin-bottom: 20px;">
+                <input type="text" id="buscar-prod" placeholder="🔍 Buscar por código, nombre o categoría..." oninput="filtrarProductos()" style="width: 100%;">
+            </div>
+
+            <div id="lista-productos" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px; max-height: 65vh; overflow-y: auto; padding-right: 5px;">
+                <!-- Productos dinámicos desde API -->
+            </div>
+        </div>
+
+        <!-- Columna Derecha: Carrito de Compras -->
+        <div class="card" style="flex: 1; margin-bottom: 0; position: sticky; top: 20px;">
+            <h3>🛒 Carrito de Compras</h3>
+            <div style="max-height: 50vh; overflow-y: auto; margin-bottom: 15px;">
+                <table class="table" style="font-size: 0.9rem;">
+                    <thead>
+                        <tr>
+                            <th>Producto</th>
+                            <th>Cant.</th>
+                            <th>Subtotal</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabla-carrito">
+                        <tr>
+                            <td colspan="4" style="text-align: center; color: #888; padding: 20px 0;">El carrito está vacío</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div style="border-top: 2px solid #f0f0f0; padding-top: 15px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                    <span style="font-size: 1.1rem; font-weight: bold; color: #555;">Total a pagar:</span>
+                    <span style="font-size: 1.5rem; font-weight: bold; color: #2e7d32;">\$<span id="total-venta">0.00</span></span>
+                </div>
+                <button onclick="procesarVenta()" class="btn btn-primary" style="width: 100%; font-size: 1.1rem; padding: 12px; border-radius: 25px;">Finalizar Venta</button>
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        let productosCache = [];
+        let carrito = [];
+
+        async function cargarProductos() {
+            try {
+                const res = await fetch('/api/productos');
+                productosCache = await res.json();
+                renderizarProductos(productosCache);
+            } catch (error) {
+                console.error("Error al cargar productos:", error);
+            }
+        }
+
+        function renderizarProductos(productos) {
+            const contenedor = document.getElementById('lista-productos');
+            contenedor.innerHTML = '';
+
+            productos.forEach(p => {
+                const deshabilitado = p.stock <= 0;
+                contenedor.innerHTML += `
+                    <div style="border: 2px solid #e3f2fd; border-radius: 12px; padding: 12px; background: #ffffff; display: flex; flex-direction: column; justify-content: space-between; box-shadow: 0 2px 5px rgba(0,0,0,0.03);">
+                        <div>
+                            <h4 style="margin: 0 0 5px 0; font-size: 1rem;">${p.nombre} <small style="color: #888;">(${p.codigo})</small></h4>
+                            <span class="badge" style="font-size: 0.75rem;">${p.categoria || 'Gral'}</span>
+                            <p style="margin: 8px 0; font-size: 0.85rem; color: #555;">
+                                Talla: <b>${p.talla || '-'}</b> | Color: <b>${p.color || '-'}</b><br>
+                                Stock: <b style="${p.stock_bajo ? 'color: #dc3545;' : ''}">${p.stock}</b>
+                            </p>
+                            <h3 style="margin: 5px 0; color: #2e7d32; font-size: 1.2rem;">$${(p.precio || p.precio_venta).toFixed(2)}</h3>
+                        </div>
+                        <button class="btn btn-primary" onclick="agregarAlCarrito('${p.id}')" ${deshabilitado ? 'disabled' : ''} style="margin-top: 8px; width: 100%; padding: 8px; font-size: 0.9rem;">
+                            ${deshabilitado ? 'Agotado' : '+ Agregar'}
+                        </button>
+                    </div>
+                `;
+            });
+        }
+
+        function filtrarProductos() {
+            const q = document.getElementById('buscar-prod').value.toLowerCase();
+            const filtrados = productosCache.filter(p => 
+                p.nombre.toLowerCase().includes(q) || 
+                p.codigo.toLowerCase().includes(q) ||
+                (p.categoria && p.categoria.toLowerCase().includes(q))
+            );
+            renderizarProductos(filtrados);
+        }
+
+        function agregarAlCarrito(id) {
+            const prod = productosCache.find(p => p.id === id);
+            if (!prod) return;
+
+            const itemCarrito = carrito.find(item => item.id === id);
+            if (itemCarrito) {
+                if (itemCarrito.cantidad < prod.stock) {
+                    itemCarrito.cantidad++;
+                } else {
+                    alert("No hay más stock disponible para esta prenda.");
+                }
+            } else {
+                carrito.push({
+                    id: prod.id,
+                    nombre: prod.nombre,
+                    precio: prod.precio || prod.precio_venta,
+                    cantidad: 1,
+                    stockMax: prod.stock
+                });
+            }
+            renderCarrito();
+        }
+
+        function cambiarCantidad(id, cambio) {
+            const item = carrito.find(i => i.id === id);
+            if (!item) return;
+
+            item.cantidad += cambio;
+            if (item.cantidad <= 0) {
+                carrito = carrito.filter(i => i.id !== id);
+            } else if (item.cantidad > item.stockMax) {
+                item.cantidad = item.stockMax;
+                alert("Stock máximo alcanzado.");
+            }
+            renderCarrito();
+        }
+
+        function renderCarrito() {
+            const tbody = document.getElementById('tabla-carrito');
+            const totalEl = document.getElementById('total-venta');
+
+            if (carrito.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: #888; padding: 20px 0;">El carrito está vacío</td></tr>`;
+                totalEl.innerText = '0.00';
+                return;
+            }
+
+            tbody.innerHTML = '';
+            let total = 0;
+
+            carrito.forEach(item => {
+                const subtotal = item.precio * item.cantidad;
+                total += subtotal;
+
+                tbody.innerHTML += `
+                    <tr>
+                        <td><b style="font-size: 0.85rem;">${item.nombre}</b></td>
+                        <td style="white-space: nowrap;">
+                            <button class="btn btn-secondary" style="padding: 1px 6px; font-size: 0.8rem;" onclick="cambiarCantidad('${item.id}', -1)">-</button>
+                            <span style="margin: 0 4px; font-size: 0.85rem;"><b>${item.cantidad}</b></span>
+                            <button class="btn btn-secondary" style="padding: 1px 6px; font-size: 0.8rem;" onclick="cambiarCantidad('${item.id}', 1)">+</button>
+                        </td>
+                        <td><b style="font-size: 0.85rem;">$${subtotal.toFixed(2)}</b></td>
+                        <td><button class="btn btn-secondary" style="background-color: #ffcdd2; color: #c62828; padding: 2px 6px; font-size: 0.75rem;" onclick="eliminarDelCarrito('${item.id}')">✕</button></td>
+                    </tr>
+                `;
+            });
+
+            totalEl.innerText = total.toFixed(2);
+        }
+
+        function eliminarDelCarrito(id) {
+            carrito = carrito.filter(i => i.id !== id);
+            renderCarrito();
+        }
+
+        async function procesarVenta() {
+            if (carrito.length === 0) {
+                alert("Agrega al menos una prenda al carrito antes de finalizar la venta.");
+                return;
+            }
+
+            const payload = {
+                items: carrito.map(i => ({ id: i.id, cantidad: i.cantidad }))
+            };
+
+            try {
+                const res = await fetch('/api/ventas', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (res.ok) {
+                    alert("¡Venta procesada con éxito!");
+                    carrito = [];
+                    renderCarrito();
+                    cargarProductos();
+                } else {
+                    const err = await res.json();
+                    alert("Error al procesar la venta: " + (err.error || "Desconocido"));
+                }
+            } catch (error) {
+                console.error("Error al procesar la venta:", error);
+            }
+        }
+
+        cargarProductos();
+    </script>
+</body>
+</html>
