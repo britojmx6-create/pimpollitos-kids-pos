@@ -41,13 +41,16 @@ function cargarDatos() {
                     "stock": 8
                 }
             ],
-            "ventas": []
+            "ventas": [],
+            "fiados": []
         };
         guardarDatos(datosIniciales);
         return datosIniciales;
     }
     const data = fs.readFileSync(DB_FILE, 'utf8');
-    return JSON.parse(data);
+    const parsed = JSON.parse(data);
+    if (!parsed.fiados) parsed.fiados = [];
+    return parsed;
 }
 
 function guardarDatos(datos) {
@@ -65,6 +68,10 @@ app.get('/', (req, res) => {
 
 app.get('/ventas', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'ventas.html'));
+});
+
+app.get('/fiados', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'fiados.html'));
 });
 
 // API para Metadatos (Categorías, Tallas, Colores)
@@ -95,7 +102,6 @@ app.post('/api/productos', (req, res) => {
     const datos = cargarDatos();
     const nuevo = req.body;
     
-    // Generación automática de código único si se deja vacío
     const siguienteCodigo = 1000 + datos.productos.length + 1;
     const codigoFinal = (!nuevo.codigo || nuevo.codigo.trim() === '') 
         ? siguienteCodigo.toString() 
@@ -209,6 +215,59 @@ app.post('/api/ventas', (req, res) => {
     guardarDatos(datos);
 
     res.json({ mensaje: "Venta procesada con éxito", venta: registroVenta });
+});
+
+// --- API DE FIADOS (CUENTAS POR COBRAR) ---
+app.get('/api/fiados', (req, res) => {
+    const datos = cargarDatos();
+    res.json(datos.fiados || []);
+});
+
+app.post('/api/fiados', (req, res) => {
+    const { cliente, telefono, detalle, total } = req.body;
+    const datos = cargarDatos();
+    
+    if (!datos.fiados) datos.fiados = [];
+
+    const nuevoFiado = {
+        id: `FIADO-${Date.now()}`,
+        cliente,
+        telefono: telefono || '',
+        detalle,
+        total: parseFloat(total),
+        abonado: 0,
+        pendiente: parseFloat(total),
+        fecha: new Date().toLocaleDateString(),
+        estado: 'Pendiente'
+    };
+
+    datos.fiados.push(nuevoFiado);
+    guardarDatos(datos);
+    res.status(201).json({ success: true, fiado: nuevoFiado });
+});
+
+app.put('/api/fiados/:id/abonar', (req, res) => {
+    const { montoAbono } = req.body;
+    const datos = cargarDatos();
+    const fiado = (datos.fiados || []).find(f => f.id === req.params.id);
+
+    if (!fiado) return res.status(404).json({ error: "Registro de fiado no encontrado" });
+
+    const abono = parseFloat(montoAbono);
+    if (isNaN(abono) || abono <= 0) {
+        return res.status(400).json({ error: "Monto de abono inválido" });
+    }
+
+    fiado.abonado += abono;
+    fiado.pendiente = fiado.total - fiado.abonado;
+
+    if (fiado.pendiente <= 0) {
+        fiado.pendiente = 0;
+        fiado.estado = 'Pagado';
+    }
+
+    guardarDatos(datos);
+    res.json({ success: true, fiado });
 });
 
 app.listen(PORT, () => {
