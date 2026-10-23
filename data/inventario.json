@@ -123,5 +123,29 @@
                 }
             ]
         }
+    ],
+    "fiados": [
+        {
+            "id": "FIADO-1792630635194",
+            "cliente": "luisa",
+            "telefono": "12254544",
+            "detalle": "pantalon y camisa",
+            "total": 25,
+            "abonado": 0,
+            "pendiente": 25,
+            "fecha": "22/10/2026",
+            "estado": "Pendiente"
+        },
+        {
+            "id": "FIADO-1792689869198",
+            "cliente": "marilyn alcala",
+            "telefono": "1245879",
+            "detalle": "pantaletas",
+            "total": 30,
+            "abonado": 30,
+            "pendiente": 0,
+            "fecha": "22/10/2026",
+            "estado": "Pagado"
+        }
     ]
 }
