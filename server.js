@@ -65,36 +65,6 @@ function guardarDatos(datos) {
     fs.writeFileSync(DB_FILE, JSON.stringify(datos, null, 4), 'utf8');
 }
 
-// Función auxiliar optimizada y robusta para guardar imágenes en Base64
-function guardarImagenBase64(base64Str, nombreOriginal) {
-    if (!base64Str || !nombreOriginal) return null;
-    try {
-        let base64Data = base64Str;
-        
-        // Separar de forma segura el contenido Base64 sin importar el tipo de imagen (JPEG, PNG, etc.)
-        if (base64Str.includes('base64,')) {
-            base64Data = base64Str.split('base64,')[1];
-        }
-        
-        const buffer = Buffer.from(base64Data.trim(), 'base64');
-        const carpetaDestino = path.join(__dirname, 'public', 'img', 'productos');
-        
-        if (!fs.existsSync(carpetaDestino)) {
-            fs.mkdirSync(carpetaDestino, { recursive: true });
-        }
-        
-        const nombreLimpio = nombreOriginal.trim().replace(/\s+/g, '_');
-        const nombreArchivo = `${Date.now()}_${nombreLimpio}`;
-        
-        fs.writeFileSync(path.join(carpetaDestino, nombreArchivo), buffer);
-        console.log("¡Imagen guardada con éxito en el servidor:", nombreArchivo);
-        return nombreArchivo;
-    } catch (e) {
-        console.error("Error al guardar la imagen:", e);
-        return null;
-    }
-}
-
 // Rutas de Vistas
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'inventario.html'));
@@ -141,10 +111,10 @@ app.post('/api/productos', (req, res) => {
         ? siguienteCodigo.toString() 
         : nuevo.codigo;
 
+    // Guardar el Base64 directamente en la propiedad imagen
     let imagenFinal = '';
-    if (nuevo.imagen_base64 && nuevo.imagen_nombre) {
-        const guardada = guardarImagenBase64(nuevo.imagen_base64, nuevo.imagen_nombre);
-        if (guardada) imagenFinal = guardada;
+    if (nuevo.imagen_base64 && nuevo.imagen_base64.trim() !== '') {
+        imagenFinal = nuevo.imagen_base64.trim();
     }
 
     const nuevoProd = {
@@ -175,9 +145,10 @@ app.put('/api/productos/:id', (req, res) => {
         if (p.id === id) {
             encontrado = true;
             let imagenFinal = p.imagen;
-            if (cambios.imagen_base64 && cambios.imagen_nombre) {
-                const guardada = guardarImagenBase64(cambios.imagen_base64, cambios.imagen_nombre);
-                if (guardada) imagenFinal = guardada;
+            
+            // Actualizar Base64 si se envió uno nuevo
+            if (cambios.imagen_base64 && cambios.imagen_base64.trim() !== '') {
+                imagenFinal = cambios.imagen_base64.trim();
             }
 
             return {
