@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Control de Fiados - Pimpollitos Kids</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <nav class="navbar" style="padding: 10px 20px; background-color: #ffffff; border-bottom: 2px solid #e0e0e0; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
+        <div class="logo-container" style="display: flex; align-items: center; gap: 12px;">
+            <div style="width: 55px; height: 55px; border-radius: 50%; overflow: hidden; display: flex; align-items: center; justify-content: center; background-color: #fff; box-shadow: 0 2px 6px rgba(0,0,0,0.15);">
+                <img src="/img/pimpollito.jpg" alt="Pimpollitos Kids" style="width: 100%; height: 100%; object-fit: cover; object-position: center;">
+            </div>
+            <span style="font-weight: bold; font-size: 1.3rem; color: #333;">Pimpollitos Kids</span>
+        </div>
+        <ul class="nav-links" style="display: flex; gap: 15px; list-style: none; margin: 0; padding: 0; flex-wrap: wrap;">
+            <li><a href="/" style="text-decoration: none; font-weight: 600; color: #333;">Inventario</a></li>
+            <li><a href="/ventas" style="text-decoration: none; font-weight: 600; color: #333;">POS</a></li>
+            <li><a href="/fiados" style="text-decoration: none; font-weight: 600; color: #e91e63;">Fiados</a></li>
+        </ul>
+    </nav>
+
+    <main class="container">
+        <div class="card">
+            <h2>📝 Registrar Nuevo Fiado</h2>
+            <form id="form-fiado" onsubmit="registrarFiado(event)">
+                <div class="form-grid">
+                    <input type="text" id="fiado-cliente" placeholder="Nombre del cliente" required>
+                    <input type="text" id="fiado-telefono" placeholder="Teléfono de contacto">
+                    <input type="text" id="fiado-detalle" placeholder="Detalle de prendas (Ej. Vestido rosa T-4)" required>
+                    <input type="number" step="0.01" id="fiado-total" placeholder="Monto total (\$)" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Guardar Fiado</button>
+            </form>
+        </div>
+
+        <div class="card">
+            <h3>📋 Lista de Cuentas por Cobrar</h3>
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Fecha</th>
+                            <th>Cliente</th>
+                            <th>Detalle</th>
+                            <th>Total</th>
+                            <th>Pendiente</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabla-fiados">
+                        <!-- Datos cargados dinámicamente -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        async function cargarFiados() {
+            try {
+                const res = await fetch('/api/fiados');
+                const fiados = await res.json();
+                const tbody = document.getElementById('tabla-fiados');
+                tbody.innerHTML = '';
+
+                if (fiados.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: #888; padding: 20px 0;">No hay fiados registrados</td></tr>`;
+                    return;
+                }
+
+                fiados.forEach(f => {
+                    const estadoBadge = f.estado === 'Pagado' 
+                        ? '<span class="badge" style="background-color: #d4edda; color: #155724;">Pagado</span>' 
+                        : '<span class="badge" style="background-color: #f8d7da; color: #721c24;">Pendiente</span>';
+
+                    tbody.innerHTML += `
+                        <tr>
+                            <td>${f.fecha}</td>
+                            <td><b>${f.cliente}</b><br><small>${f.telefono}</small></td>
+                            <td>${f.detalle}</td>
+                            <td>$${f.total.toFixed(2)}</td>
+                            <td><b style="color: #d9534f;">$${f.pendiente.toFixed(2)}</b></td>
+                            <td>${estadoBadge}</td>
+                            <td>
+                                ${f.estado !== 'Pagado' ? `<button class="btn btn-sm btn-success" onclick="abonar('${f.id}',${f.pendiente})">Abonar</button>` : 'Saldado'}
+                            </td>
+                        </tr>
+                    `;
+                });
+            } catch (error) {
+                console.error("Error al cargar fiados:", error);
+            }
+        }
+
+        async function registrarFiado(e) {
+            e.preventDefault();
+            const body = {
+                cliente: document.getElementById('fiado-cliente').value,
+                telefono: document.getElementById('fiado-telefono').value,
+                detalle: document.getElementById('fiado-detalle').value,
+                total: document.getElementById('fiado-total').value
+            };
+
+            const res = await fetch('/api/fiados', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(body)
+            });
+
+            if (res.ok) {
+                document.getElementById('form-fiado').reset();
+                cargarFiados();
+                alert("Fiado registrado correctamente.");
+            } else {
+                alert("Error al registrar el fiado.");
+            }
+        }
+
+        async function abonar(id, pendienteActual) {
+            const abonoStr = prompt(`Deuda pendiente: $${pendienteActual.toFixed(2)}\nIngrese el monto del abono:`);
+            if (!abonoStr) return;
+
+            const montoAbono = parseFloat(abonoStr);
+            if (isNaN(montoAbono) || montoAbono <= 0) {
+                alert("Ingrese un monto válido.");
+                return;
+            }
+
+            const res = await fetch(`/api/fiados/${id}/abonar`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ montoAbono })
+            });
+
+            if (res.ok) {
+                cargarFiados();
+                alert("Abono registrado con éxito.");
+            } else {
+                alert("Error al procesar el abono.");
+            }
+        }
+
+        cargarFiados();
+    </script>
+</body>
+</html>
